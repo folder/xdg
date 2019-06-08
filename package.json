@@ -1,0 +1,41 @@
+{
+  "name": "@folder/xdg",
+  "description": "Node.js/JavaScript API resolving the XDG Base Directory.",
+  "version": "0.1.0",
+  "repository": "folder/xdg",
+  "homepage": "https://github.com/folder/xdg",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "bugs": {
+    "url": "https://github.com/folder/xdg/issues"
+  },
+  "main": "index.js",
+  "engines": {
+    "node": ">=6"
+  },
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "@folder/readdir": "file:../readdir"
+  },
+  "devDependencies": {
+    "gulp-format-md": "^2.0.0"
+  },
+  "keywords": [
+    "xdg"
+  ],
+  "verb": {
+    "toc": false,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "lint": {
+      "reflinks": true
+    }
+  }
+}
