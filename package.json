@@ -1,6 +1,6 @@
 {
   "name": "@folder/xdg",
-  "description": "Node.js/JavaScript API resolving the XDG Base Directory.",
+  "description": "Get the XDG Base Directories or sensible defaults for Linux, Windows, or MacOS.",
   "version": "0.1.0",
   "repository": "folder/xdg",
   "homepage": "https://github.com/folder/xdg",
@@ -8,17 +8,16 @@
   "bugs": {
     "url": "https://github.com/folder/xdg/issues"
   },
+  "files": [
+    "index.js"
+  ],
   "main": "index.js",
   "engines": {
-    "node": ">=6"
+    "node": ">=8"
   },
   "license": "MIT",
-  "scripts": {
-    "test": "mocha"
-  },
   "devDependencies": {
-    "gulp-format-md": "^2.0.0",
-    "mocha": "^6.1.4"
+    "gulp-format-md": "^2.0.0"
   },
   "keywords": [
     "base",
@@ -34,6 +33,7 @@
     "file path",
     "file paths",
     "file",
+    "files",
     "filepath",
     "filepaths",
     "find",
@@ -62,6 +62,14 @@
     ],
     "lint": {
       "reflinks": true
+    },
+    "related": {
+      "list": [
+        "expand-tilde",
+        "global-modules",
+        "global-paths",
+        "normalize-path"
+      ]
     }
   }
 }

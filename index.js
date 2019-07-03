@@ -2,117 +2,187 @@
 
 const os = require('os');
 const path = require('path');
+const join = path.join;
+
 const split = str => str ? str.split(path.delimiter) : [];
 const title = str => str[0].toUpperCase() + str.slice(1);
 const homedir = platform => {
   return os.homedir() || (platform === 'win32' ? os.tmpdir() : '/usr/local/share');
 };
 
+const expanded = (paths, options = {}) => ({
+  cwd: options.cwd || process.cwd(),
+  home: options.homedir || homedir(options.platform || process.platform),
+  temp: options.tempdir || os.tmpdir(),
+  cache: {
+    home: options.cacheDir || paths.cache
+  },
+  config: {
+    home: options.configDir || paths.config,
+    dirs: [...new Set([options.configDir || paths.config, ...paths.configDirs])]
+  },
+  data: {
+    home: options.dataDir || paths.data,
+    dirs: [...new Set([options.dataDir || paths.data, ...paths.dataDirs])]
+  },
+  runtime: {
+    home: options.runtimeDir || paths.runtime
+  }
+});
+
+/**
+ * Get the XDG Base Directory paths for Linux, or the equivalents for Windows or MaxOS.
+ * @name xdg()
+ * @param {Object} `options`
+ * @return {Object} Returns an object of paths for the current platform.
+ * @api public
+ */
+
 const xdg = (options = {}) => {
-  const cwd = options.cwd ? path.resolve(options.cwd) : process.cwd();
   const platform = options.platform || process.platform;
-  const folder = options.folder;
-  const home = options.homedir || homedir(platform);
-  const env = options.env || process.env;
   const fn = xdg[platform];
 
   if (typeof fn !== 'function') {
     throw new Error(`Platform "${platform}" is not supported`);
   }
 
-  const paths = fn(home, env);
-  const resolve = dir => folder ? xdg.resolve(dir, folder) : dir;
-
-  return {
-    cache: resolve(options.cacheDir || paths.cache),
-    config: resolve(options.configDir || paths.config),
-    configDirs: [options.configDir || paths.config, ...paths.configDirs].map(resolve),
-    data: resolve(options.dataDir || paths.data),
-    dataDirs: [options.dataDir || paths.data, ...paths.dataDirs].map(resolve),
-    runtime: resolve(options.runtimeDir || paths.runtime),
-
-    // cache: {
-    //   home: resolve(options.cacheDir || paths.cache)
-    // },
-    // config: {
-    //   home: resolve(options.configDir || paths.config),
-    //   dirs: [options.configDir || paths.config, ...paths.configDirs].map(resolve)
-    // },
-    // data: {
-    //   home: resolve(options.dataDir || paths.data),
-    //   dirs: [options.dataDir || paths.data, ...paths.dataDirs].map(resolve)
-    // },
-    // runtime: {
-    //   home: resolve(options.runtimeDir || paths.runtime)
-    // },
-
-    /**
-     * Non-standard directories
-     */
-
-    cwd,
-    home,
-    temp: resolve(os.tmpdir()),
-    logs: resolve(options.logsDir || paths.logs),
-    state: resolve(options.stateDir || paths.state)
-  };
+  return fn(options);
 };
 
-xdg.darwin = (home = os.homedir(), env = process.env) => {
-  return {
-    cache: env.XDG_CACHE_HOME || path.join(home, 'Library', 'Caches'),
-    config: env.XDG_CONFIG_HOME || path.join(home, 'Library', 'Preferences'),
-    configDirs: split(env.XDG_CONFIG_DIRS || '/etc/xdg'),
-    data: env.XDG_DATA_HOME || path.join(home, 'Library', 'Application Support'),
-    dataDirs: split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/'),
-    logs: '',
-    runtime: env.XDG_RUNTIME_DIR || env.TMPDIR
+/**
+ * Get XDG equivalent paths for MacOS. Used by the main export when `process.platform`
+ * is `darwin`. Aliased as `xdg.macos()`.
+ *
+ * ```js
+ * const dirs = xdg.darwin();
+ * // or
+ * const dirs = xdg.macos();
+ * ```
+ * @param {Object} `options`
+ * @return {Object} Returns an object of paths.
+ * @api public
+ */
+
+xdg.darwin = (options = {}) => {
+  const env = options.env || process.env;
+  const subdir = options.subdir || '';
+  const resolve = options.resolve || xdg.resolve;
+
+  const temp = options.tempdir || os.tmpdir();
+  const home = options.homedir || homedir('darwin');
+  const lib = join(home, 'Library');
+  const config = resolve(env.XDG_CONFIG_HOME || join(lib, 'Preferences'), subdir);
+  const data = resolve(env.XDG_DATA_HOME || join(lib, 'Application Support'), subdir);
+
+  const dirs = {
+    cache: resolve(env.XDG_CACHE_HOME || join(lib, 'Caches'), subdir),
+    config,
+    configDirs: [config].concat(split(env.XDG_CONFIG_DIRS || '/etc/xdg')),
+    data,
+    dataDirs: [data].concat(split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')),
+    runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir)
   };
+
+  if (options.expanded === true) {
+    return expanded(dirs, options);
+  }
+
+  return dirs;
 };
 
-xdg.linux = (home = os.homedir(), env = process.env) => {
-  return {
-    cache: env.XDG_CACHE_HOME || path.join(home, '.cache'),
-    config: env.XDG_CONFIG_HOME || path.join(home, '.config'),
-    configDirs: split(env.XDG_CONFIG_DIRS || '/etc/xdg'),
-    data: env.XDG_DATA_HOME || path.join(home, '.local', 'share'),
-    dataDirs: split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/'),
-    runtime: env.XDG_RUNTIME_DIR || env.TMPDIR,
-    logs: env.XDG_LOG_DIR || '/var/log',
-    state: env.XDG_STATE_DIR || path.join(home, '.local', 'state')
+/**
+ * Get XDG equivalent paths for Linux. Used by the main export when `process.platform`
+ * is `linux`.
+ *
+ * ```js
+ * const dirs = xdg.linux();
+ * ```
+ * @return {Object} Returns an object of paths.
+ * @return {Object} Returns an object of paths.
+ * @api public
+ */
+
+xdg.linux = (options = {}) => {
+  const env = options.env || process.env;
+  const subdir = options.subdir || '';
+  const resolve = options.resolve || xdg.resolve;
+
+  const temp = options.tempdir || os.tmpdir();
+  const home = options.homedir || homedir('linux');
+  const config = resolve(env.XDG_CONFIG_HOME || join(home, '.config'), subdir);
+  const data = resolve(env.XDG_DATA_HOME || join(home, '.local', 'share'), subdir);
+
+  const dirs = {
+    cache: resolve(env.XDG_CACHE_HOME || join(home, '.cache'), subdir),
+    config,
+    configDirs: [config].concat(split(env.XDG_CONFIG_DIRS || '/etc/xdg')),
+    data,
+    dataDirs: [data].concat(split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')),
+    runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir)
   };
+
+  if (options.expanded === true) {
+    return expanded(dirs, options);
+  }
+
+  return dirs;
 };
 
-xdg.win32 = (home = os.homedir(), env = process.env) => {
+/**
+ * Get XDG equivalent paths for MacOS. Used by the main export when `process.platform`
+ * is `win32`. Aliased as `xdg.windows()`.
+ *
+ * ```js
+ * const dirs = xdg.win32();
+ * // or
+ * const dirs = xdg.windows();
+ * ```
+ * @param {Object} `options`
+ * @return {Object} Returns an object of paths.
+ * @api public
+ */
+
+xdg.win32 = (options = {}) => {
+  const env = options.env || process.env;
+  const subdir = options.subdir || '';
+  const resolve = options.resolve || xdg.resolve;
   const { APPDATA, LOCALAPPDATA } = env;
-  const local = path.join(home, 'AppData', 'Local');
-  const roaming = path.join(home, 'AppData', 'Roaming');
-  const temp = os.tmpdir();
 
-  return {
-    cache: env.XDG_CACHE_HOME || temp,
-    config: env.XDG_CONFIG_HOME || APPDATA || roaming,
-    configDirs: split(env.XDG_CONFIG_DIRS) || [],
-    data: env.XDG_DATA_HOME || LOCALAPPDATA || local,
-    dataDirs: split(env.XDG_DATA_DIRS) || [],
-    runtime: env.XDG_RUNTIME_DIR || temp,
-    logs: env.XDG_LOG_DIR || path.join(home, 'Documents'),
-    state: env.XDG_STATE_DIR || path.join(home, '.local', 'state')
+  const temp = options.tempdir || os.tmpdir();
+  const home = options.homedir || homedir('win32');
+  const local = LOCALAPPDATA || join(home, 'AppData', 'Local');
+  const roaming = APPDATA || join(home, 'AppData', 'Roaming');
+  const config = resolve(env.XDG_CONFIG_HOME || roaming, subdir, 'Config');
+  const data = resolve(env.XDG_DATA_HOME || local, subdir, 'Data');
+
+  const dirs = {
+    cache: resolve(env.XDG_CACHE_HOME || join(local), subdir, 'Cache'),
+    config,
+    configDirs: [config].concat(split(env.XDG_CONFIG_DIRS)),
+    data,
+    dataDirs: [data].concat(split(env.XDG_DATA_DIRS)),
+    runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir)
   };
+
+  if (options.expanded === true) {
+    return expanded(dirs, options);
+  }
+
+  return dirs;
 };
 
 /**
  * Respect casing in user's existing paths
  */
 
-xdg.resolve = (parentDir, folder = '') => {
-  if (folder && /^[A-Z]/.test(path.basename(parentDir))) {
-    return path.join(parentDir, title(folder));
+xdg.resolve = (parentdir, subdir = '', ...rest) => {
+  if (subdir && /^[A-Z]/.test(path.basename(parentdir))) {
+    return path.join(parentdir, title(subdir), ...rest);
   }
-  if (folder) {
-    return path.join(parentDir, folder);
+  if (subdir) {
+    return path.join(parentdir, subdir.toLowerCase(), ...rest);
   }
-  return parentDir;
+  return path.join(parentdir, 'xdg', ...rest);
 };
 
 /**
@@ -122,12 +192,3 @@ xdg.resolve = (parentDir, folder = '') => {
 xdg.windows = xdg.win32;
 xdg.macos = xdg.darwin;
 module.exports = xdg;
-
-console.log('=== DARWIN ===');
-console.log(xdg())
-console.log()
-console.log('=== LINUX ===');
-console.log(xdg({ platform: 'linux' }))
-console.log()
-console.log('=== WINDOWS ===');
-console.log(xdg({ platform: 'win32' }));
