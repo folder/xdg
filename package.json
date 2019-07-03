@@ -16,13 +16,39 @@
   "scripts": {
     "test": "mocha"
   },
-  "dependencies": {
-    "@folder/readdir": "file:../readdir"
-  },
   "devDependencies": {
-    "gulp-format-md": "^2.0.0"
+    "gulp-format-md": "^2.0.0",
+    "mocha": "^6.1.4"
   },
   "keywords": [
+    "base",
+    "basedir",
+    "cache",
+    "config",
+    "data",
+    "dir",
+    "directories",
+    "directory",
+    "dirname",
+    "dot",
+    "file path",
+    "file paths",
+    "file",
+    "filepath",
+    "filepaths",
+    "find",
+    "folder",
+    "global",
+    "home",
+    "linux",
+    "path",
+    "paths",
+    "rc",
+    "runtime",
+    "spec",
+    "unix",
+    "user",
+    "xd",
     "xdg"
   ],
   "verb": {
