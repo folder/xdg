@@ -1,6 +1,6 @@
 {
   "name": "@folder/xdg",
-  "description": "Get the XDG Base Directories or sensible defaults for Linux, Windows, or MacOS.",
+  "description": "Get cross-platform XDG Base Directories or their equivalents. Works with Linux, Windows, or MacOS.",
   "version": "0.1.0",
   "repository": "folder/xdg",
   "homepage": "https://github.com/folder/xdg",
