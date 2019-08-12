@@ -43,13 +43,17 @@ The following options are available for customizing behavior and/or testing beha
 
 | Option | Type | Description | Default Value |
 | --- | --- | --- | --- |
-| `env` | `object` | The `env` object to use for getting paths. | `process.env` |
-| `expanded` | `boolean` | Expand paths into an object. See the [Expanded Paths](#expanded-paths) example for more details. | undefined |
-| `homedir` | `string` | The user's home directory. | `os.homedir()` |
-| `platform` | `string` | The platform to use: `darwin`, `linux`, `win32` | `process.platform` |
-| `resolve` | `function` | Custom function for resolving paths to each directory. The default function attempts to respect casing in the user's existing directories. | undefined |
-| `subdir` | `string` | A sub-directory to join to the path, typically the name of your application. This path is joined differently on each platform. See [examples](#examples). | `xdg` |
-| `tempdir` | `string` | The temp directory to use. | `os.tmpdir()` |
+| `cachedir`   | `string`   | Override the default `cachedir` | Platform specific, see [below](#examples) |
+| `configdir`  | `string`   | Override the default `configdir` |  |
+| `datadir`    | `string`   | Override the default `datadir` |  |
+| `env`        | `object`   | The `env` object to use for getting paths. | `process.env` |
+| `expanded`   | `boolean`  | Expand paths into an object. See the [Expanded Paths](#expanded-paths) example for more details. | undefined |
+| `homedir`    | `string`   | The user's home directory. | `os.homedir()` |
+| `platform`   | `string`   | The platform to use: `darwin`, `linux`, `win32` | `process.platform` |
+| `resolve`    | `function` | Custom function for resolving paths to each directory. The default function attempts to respect casing in the user's existing directories. | undefined |
+| `runtimedir` | `string`   | Override the default `runtimedir` |  |
+| `subdir`     | `string`   | A sub-directory to join to the path, typically the name of your application. This path is joined differently on each platform. See [examples](#examples). | `xdg` |
+| `tempdir`    | `string`   | The temp directory to use. | `os.tmpdir()` |
 
 See [examples](#xamples) below.
 
@@ -91,9 +95,9 @@ console.log(xdg());
 {
   cache: '/Users/jonschlinkert/Library/Caches/xdg',
   config: '/Users/jonschlinkert/Library/Preferences/xdg',
-  configDirs: [ '/Users/jonschlinkert/Library/Preferences/xdg', '/etc/xdg' ],
+  configdirs: [ '/Users/jonschlinkert/Library/Preferences/xdg', '/etc/xdg' ],
   data: '/Users/jonschlinkert/Library/Application Support/xdg',
-  dataDirs: [
+  datadirs: [
     '/Users/jonschlinkert/Library/Application Support/xdg',
     '/usr/local/share/',
     '/usr/share/'
@@ -108,9 +112,9 @@ console.log(xdg());
 {
   cache: '/Users/jonschlinkert/.cache/xdg',
   config: '/Users/jonschlinkert/.config/xdg',
-  configDirs: [ '/Users/jonschlinkert/.config/xdg', '/etc/xdg' ],
+  configdirs: [ '/Users/jonschlinkert/.config/xdg', '/etc/xdg' ],
   data: '/Users/jonschlinkert/.local/share/xdg',
-  dataDirs: [
+  datadirs: [
     '/Users/jonschlinkert/.local/share/xdg',
     '/usr/local/share/',
     '/usr/share/'
@@ -125,9 +129,9 @@ console.log(xdg());
 {
   cache: '/Users/jonschlinkert/AppData/Local/xdg/Cache',
   config: '/Users/jonschlinkert/AppData/Roaming/xdg/Config',
-  configDirs: [ '/Users/jonschlinkert/AppData/Roaming/xdg/Config' ],
+  configdirs: [ '/Users/jonschlinkert/AppData/Roaming/xdg/Config' ],
   data: '/Users/jonschlinkert/AppData/Local/xdg/Data',
-  dataDirs: [ '/Users/jonschlinkert/AppData/Local/xdg/Data' ],
+  datadirs: [ '/Users/jonschlinkert/AppData/Local/xdg/Data' ],
   runtime: '/var/folders/vd/53h736bj0_sg9gk04c89k0pr0000gq/T/xdg'
 }
 ```
@@ -137,12 +141,21 @@ console.log(xdg());
 <details>
 <summary><strong>Click to see "expanded" paths example</strong></summary>
 <br>
-Running the following example returns an object with "expanded" paths, where `config` and `configDirs` are converted to `config.home` and `config.dirs`, etc. Additionally, `cwd`, `home` and `temp` paths are added for convenience.
+Running the following example returns an object with "expanded" paths, where `config` and `configdirs` are converted to `config.home` and `config.dirs`, etc. Additionally, `cwd`, `home` and `temp` paths are added for convenience.
 <br>
 
 ```js
 console.log(xdg({ expanded: true, subdir: 'FooBar' }));
 ```
+
+**Extra directories**
+
+Note that the `expanded` object includes four additional path properties for convenience:
+
+* `cwd` - set via `options.cwd` or `process.cwd()`
+* `home` - set via `options.homedir` or `os.homedir()`
+* `temp` - set via `options.tempdir` or `os.tmpdir()`
+* `cache.logs` - set at `path.join(cachedir, 'logs')`
 
 ### MacOS (darwin)
 
@@ -151,7 +164,10 @@ console.log(xdg({ expanded: true, subdir: 'FooBar' }));
   cwd: '/Users/jonschlinkert/dev/@folder/xdg',
   home: '/Users/jonschlinkert',
   temp: '/var/folders/vd/53h736bj0_sg9gk04c89k0pr0000gq/T',
-  cache: { home: '/Users/jonschlinkert/Library/Caches/FooBar' },
+  cache: { 
+    home: '/Users/jonschlinkert/Library/Caches/FooBar',
+    logs: '/Users/jonschlinkert/Library/Caches/FooBar/Logs' 
+  },
   config: {
     home: '/Users/jonschlinkert/Library/Preferences/FooBar',
     dirs: [ '/Users/jonschlinkert/Library/Preferences/FooBar', '/etc/FooBar' ]
@@ -175,7 +191,10 @@ console.log(xdg({ expanded: true, subdir: 'FooBar' }));
   cwd: '/Users/jonschlinkert/dev/@folder/xdg',
   home: '/Users/jonschlinkert',
   temp: '/var/folders/vd/53h736bj0_sg9gk04c89k0pr0000gq/T',
-  cache: { home: '/Users/jonschlinkert/.cache/FooBar' },
+  cache: { 
+    home: '/Users/jonschlinkert/.cache/FooBar',
+    logs: '/Users/jonschlinkert/.cache/FooBar/Logs'
+  },
   config: {
     home: '/Users/jonschlinkert/.config/FooBar',
     dirs: [ '/Users/jonschlinkert/.config/FooBar', '/etc/FooBar' ]
@@ -199,7 +218,10 @@ console.log(xdg({ expanded: true, subdir: 'FooBar' }));
   cwd: '/Users/jonschlinkert/dev/@folder/xdg',
   home: '/Users/jonschlinkert',
   temp: '/var/folders/vd/53h736bj0_sg9gk04c89k0pr0000gq/T',
-  cache: { home: '/Users/jonschlinkert/AppData/Local/FooBar/Cache' },
+  cache: { 
+    home: '/Users/jonschlinkert/AppData/Local/FooBar/Cache',
+    logs: '/Users/jonschlinkert/AppData/Local/FooBar/Cache/Logs'
+  },
   config: {
     home: '/Users/jonschlinkert/AppData/Roaming/FooBar/Config',
     dirs: [ '/Users/jonschlinkert/AppData/Roaming/FooBar/Config' ]
@@ -216,18 +238,20 @@ console.log(xdg({ expanded: true, subdir: 'FooBar' }));
 
 # API
 
-The following platform-specific methods are exposed for getting paths for specific platforms. Each method returns an object with the following properties (see the [XDG Base Directories](#xdg-base-directory) docs below for more details on how each property is set):
+Aside from the main export, `xdg()`, several platform-specific methods are exposed to simplify getting paths for specific platforms. Note that you can accomplish the same thing by passing the platform on the options to the main export, e.g. `{ platform: 'linux' }`.
+
+The main export, and each method, returns an object with the following properties (see the [XDG Base Directories](#xdg-base-directory) docs below for more details on how each property is set):
 
 * `cache`
 * `config`
-* `configDirs`
+* `configdirs`
 * `data`
-* `dataDirs`
+* `datadirs`
 * `runtime`
 
 ## Main Export
 
-### [xdg()](index.js#L41)
+### [xdg()](index.js#L59)
 
 Get the XDG Base Directory paths for Linux, or the equivalents for Windows or MaxOS.
 
@@ -236,7 +260,7 @@ Get the XDG Base Directory paths for Linux, or the equivalents for Windows or Ma
 * `options` **{Object}**
 * `returns` **{Object}**: Returns an object of paths for the current platform.
 
-### [.darwin](index.js#L66)
+### [.darwin](index.js#L84)
 
 Get XDG equivalent paths for MacOS. Used by the main export when `process.platform` is `darwin`. Aliased as `xdg.macos()`.
 
@@ -253,7 +277,7 @@ const dirs = xdg.darwin();
 const dirs = xdg.macos();
 ```
 
-### [.linux](index.js#L105)
+### [.linux](index.js#L123)
 
 Get XDG equivalent paths for Linux. Used by the main export when `process.platform` is `linux`.
 
@@ -266,7 +290,7 @@ Get XDG equivalent paths for Linux. Used by the main export when `process.platfo
 const dirs = xdg.linux();
 ```
 
-### [.win32](index.js#L145)
+### [.win32](index.js#L163)
 
 Get XDG equivalent paths for MacOS. Used by the main export when `process.platform` is `win32`. Aliased as `xdg.windows()`.
 
@@ -381,4 +405,4 @@ Released under the MIT License.
 
 ***
 
-_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.8.0, on July 03, 2019._
+_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.8.0, on August 12, 2019._
