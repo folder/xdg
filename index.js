@@ -4,22 +4,6 @@ const os = require('os');
 const path = require('path');
 const join = path.join;
 
-const split = str => str ? str.split(path.delimiter) : [];
-const title = str => str[0].toUpperCase() + str.slice(1);
-const homedir = platform => {
-  return os.homedir() || (platform === 'win32' ? os.tmpdir() : '/usr/local/share');
-};
-const dir = (key, options = {}) => {
-  let prop = options.envPrefix ? `${options.envPrefix}_${key}_dir` : null;
-  let name = `${key}dir`;
-
-  if (prop) {
-    return process.env[prop.toUpperCase()] || options[name];
-  }
-
-  return options[name];
-};
-
 const expanded = (paths, options = {}) => {
   let cachedir = dir('cache', options);
   let configdir = dir('config', options);
@@ -193,14 +177,34 @@ xdg.win32 = (options = {}) => {
  * Respect casing in user's existing paths
  */
 
-xdg.resolve = (parentdir, subdir = '', ...rest) => {
-  if (subdir && /^[A-Z]/.test(path.basename(parentdir))) {
-    return path.join(parentdir, title(subdir), ...rest);
+xdg.resolve = (parentdir, ...args) => {
+  if (args.length && /^[A-Z]/.test(path.basename(parentdir))) {
+    return path.join(parentdir, ...args.map(v => title(v)));
   }
-  if (subdir) {
-    return path.join(parentdir, subdir.toLowerCase(), ...rest);
+  if (args.length) {
+    return path.join(parentdir, ...args.map(v => v.toLowerCase()));
   }
-  return path.join(parentdir, 'xdg', ...rest);
+  return path.join(parentdir, 'xdg', ...args);
+};
+
+/**
+ * Helpers
+ */
+
+const split = str => str ? str.split(path.delimiter) : [];
+const title = str => str[0].toUpperCase() + str.slice(1);
+const homedir = platform => {
+  return os.homedir() || (platform === 'win32' ? os.tmpdir() : '/usr/local/share');
+};
+const dir = (key, options = {}) => {
+  let prop = options.envPrefix ? `${options.envPrefix}_${key}_dir` : null;
+  let name = `${key}dir`;
+
+  if (prop) {
+    return process.env[prop.toUpperCase()] || options[name];
+  }
+
+  return options[name];
 };
 
 /**
