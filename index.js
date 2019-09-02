@@ -73,7 +73,7 @@ xdg.darwin = (options = {}) => {
   const temp = options.tempdir || os.tmpdir();
   const home = options.homedir || homedir('darwin');
   const lib = join(home, 'Library');
-  const config = resolve(env.XDG_CONFIG_HOME || join(lib, 'Preferences'), subdir);
+  const config = resolve(env.XDG_CONFIG_HOME || join(lib, 'Application Support'), subdir);
   const data = resolve(env.XDG_DATA_HOME || join(lib, 'Application Support'), subdir);
 
   const dirs = {
@@ -146,15 +146,18 @@ xdg.linux = (options = {}) => {
 
 xdg.win32 = (options = {}) => {
   const env = options.env || process.env;
-  const subdir = options.subdir || '';
-  const resolve = options.resolve || xdg.resolve;
-  const { APPDATA, LOCALAPPDATA } = env;
-
   const temp = options.tempdir || os.tmpdir();
   const home = options.homedir || homedir('win32');
-  const local = LOCALAPPDATA || join(home, 'AppData', 'Local');
-  const roaming = APPDATA || join(home, 'AppData', 'Roaming');
-  const config = resolve(env.XDG_CONFIG_HOME || roaming, subdir, 'Config');
+  const subdir = options.subdir || '';
+  const resolve = options.resolve || xdg.resolve;
+
+  const {
+    APPDATA = join(home, 'AppData', 'Roaming'),
+    LOCALAPPDATA = join(home, 'AppData', 'Local')
+  } = env;
+
+  const local = options.roaming === true ? APPDATA : LOCALAPPDATA;
+  const config = resolve(env.XDG_CONFIG_HOME || APPDATA, subdir, 'Config');
   const data = resolve(env.XDG_DATA_HOME || local, subdir, 'Data');
 
   const dirs = {
@@ -192,7 +195,7 @@ xdg.resolve = (parentdir, ...args) => {
  */
 
 const split = str => str ? str.split(path.delimiter) : [];
-const title = str => str[0].toUpperCase() + str.slice(1);
+const title = str => str ? str[0].toUpperCase() + str.slice(1) : '';
 const homedir = platform => {
   return os.homedir() || (platform === 'win32' ? os.tmpdir() : '/usr/local/share');
 };
