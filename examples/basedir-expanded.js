@@ -1,11 +1,6 @@
-const xdg = require('.');
+'use strict';
 
-console.log('Darwin', xdg({ subdir: 'FooBar', platform: 'darwin' }));
-console.log('---');
-console.log('Linux', xdg({ subdir: 'FooBar', platform: 'linux' }));
-console.log('---');
-console.log('Windows', xdg({ subdir: 'FooBar', platform: 'win32' }));
-console.log('---');
+const xdg = require('..');
 
 console.log('==== EXPANDED ====');
 
