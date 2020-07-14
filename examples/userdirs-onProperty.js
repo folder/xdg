@@ -9,4 +9,4 @@ const onProperty = (key, value, { name, resolve }) => {
 };
 
 const res = userdirs.expand({ onProperty });
-console.log(res);
+console.log(res.create());

@@ -45,20 +45,25 @@ xdg.darwin = (options = {}) => {
   const subdir = options.subdir || '';
   const resolve = options.resolve || xdg.resolve;
 
+  const lib = () => join(home, 'Library');
+  const app = () => join(lib(), 'Application Support');
+  const caches = () => join(lib(), 'Caches');
+
   const temp = options.tempdir || os.tmpdir();
   const home = options.homedir || homedir('darwin');
-  const lib = join(home, 'Library');
-  const data = resolve(env.XDG_DATA_HOME || join(lib, 'Application Support'), subdir);
-  const config = resolve(env.XDG_CONFIG_HOME || join(lib, 'Application Support'), subdir);
+  const data = resolve(env.XDG_DATA_HOME || app(), subdir);
+  const config = resolve(env.XDG_CONFIG_HOME || app(), subdir);
+  const cch = resolve(env.XDG_CACHE_HOME || caches(), subdir);
   const etc = '/etc/xdg';
 
   const dirs = {
-    cache: resolve(env.XDG_CACHE_HOME || join(lib, 'Caches'), subdir),
+    cache: cch,
     config,
-    config_dirs: [config].concat(split(env.XDG_CONFIG_DIRS || etc)),
+    config_dirs: [config, ...split(env.XDG_CONFIG_DIRS || etc)],
     data,
-    data_dirs: [data].concat(split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')),
-    runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir)
+    data_dirs: [data, ...split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')],
+    runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir),
+    logs: join(ccg, 'logs')
   };
 
   if (options.expanded === true) {
@@ -85,19 +90,25 @@ xdg.linux = (options = {}) => {
   const subdir = options.subdir || '';
   const resolve = options.resolve || xdg.resolve;
 
+  const cache = () => join(home, '.cache');
+  const config = () => join(home, '.config');
+  const share = () => join(home, '.local', 'share');
+
   const temp = options.tempdir || os.tmpdir();
   const home = options.homedir || homedir('linux');
-  const data = resolve(env.XDG_DATA_HOME || join(home, '.local', 'share'), subdir);
-  const config = resolve(env.XDG_CONFIG_HOME || join(home, '.config'), subdir);
+  const data = resolve(env.XDG_DATA_HOME || share(), subdir);
+  const cfg = resolve(env.XDG_CONFIG_HOME || config(), subdir);
+  const cch = resolve(env.XDG_CACHE_HOME || cache(), subdir);
   const etc = '/etc/xdg';
 
   const dirs = {
-    cache: resolve(env.XDG_CACHE_HOME || join(home, '.cache'), subdir),
-    config,
-    config_dirs: [config].concat(split(env.XDG_CONFIG_DIRS || etc)),
+    cache: cch,
+    config: cfg,
+    config_dirs: [cfg, ...split(env.XDG_CONFIG_DIRS || etc)],
     data,
-    data_dirs: [data].concat(split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')),
-    runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir)
+    data_dirs: [data, ...split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')],
+    runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir),
+    logs: join(cch, 'logs')
   };
 
   if (options.expanded === true) {
@@ -142,15 +153,17 @@ xdg.win32 = (options = {}) => {
   const local = options.roaming === true ? APPDATA : LOCALAPPDATA;
   const data = resolve(env.XDG_DATA_HOME || local, subdir, 'Data');
   const appdata = env.XDG_CONFIG_HOME || APPDATA;
+  const cache = resolve(XDG_CACHE_HOME || local, subdir, 'Cache');
   const config = resolve(appdata, subdir, 'Config');
 
   const dirs = {
-    cache: resolve(XDG_CACHE_HOME || join(local), subdir, 'Cache'),
+    cache,
     config,
-    config_dirs: [config].concat(split(XDG_CONFIG_DIRS)),
+    config_dirs: [config, ...split(XDG_CONFIG_DIRS)],
     data,
-    data_dirs: [data].concat(split(XDG_DATA_DIRS)),
-    runtime: resolve(XDG_RUNTIME_DIR || temp, subdir)
+    data_dirs: [data, ...split(XDG_DATA_DIRS)],
+    runtime: resolve(XDG_RUNTIME_DIR || temp, subdir),
+    logs: join(cache, 'logs')
   };
 
   if (options.expanded === true) {

@@ -1,6 +1,6 @@
 {
   "name": "@folder/xdg",
-  "description": "Get cross-platform XDG Base Directories or their equivalents. Works with Linux, Windows, or MacOS. No dependencies.",
+  "description": "Get cross-platform XDG Base Directories or their equivalents. Works with Linux, Windows, or MacOS.",
   "version": "3.0.0",
   "repository": "folder/xdg",
   "homepage": "https://github.com/folder/xdg",
@@ -16,6 +16,9 @@
     "node": ">=10"
   },
   "license": "MIT",
+  "dependencies": {
+    "write": "^2.0.0"
+  },
   "devDependencies": {
     "gulp-format-md": "^2.0.0",
     "mocha": "^8.0.1"
