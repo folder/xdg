@@ -9,7 +9,8 @@
     "url": "https://github.com/folder/xdg/issues"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "lib/"
   ],
   "main": "index.js",
   "engines": {
