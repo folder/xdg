@@ -141,7 +141,8 @@ xdg.win32 = (options = {}) => {
 
   const local = options.roaming === true ? APPDATA : LOCALAPPDATA;
   const data = resolve(env.XDG_DATA_HOME || local, subdir, 'Data');
-  const config = resolve(env.XDG_CONFIG_HOME || APPDATA, subdir, 'Config');
+  const appdata = env.XDG_CONFIG_HOME || APPDATA;
+  const config = resolve(appdata, subdir, 'Config');
 
   const dirs = {
     cache: resolve(XDG_CACHE_HOME || join(local), subdir, 'Cache'),
