@@ -1,0 +1,5 @@
+# Custom settings for user directories
+MUSIC=Documents/Music
+PICTURES=Documents/Pictures
+TEMPLATES=Documents/Templates
+VIDEOS=Documents/Videos
