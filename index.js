@@ -1,36 +1,11 @@
 'use strict';
 
+const isWindows = process.platform === 'win32';
 const os = require('os');
 const path = require('path');
 const join = path.join;
-
-const expanded = (paths, options = {}) => {
-  let cachedir = dir('cache', options);
-  let configdir = dir('config', options);
-  let datadir = dir('data', options);
-  let runtimedir = dir('runtime', options);
-
-  return {
-    cwd: options.cwd || process.cwd(),
-    home: dir('home', options) || homedir(options.platform || process.platform),
-    temp: dir('temp', options) || os.tmpdir(),
-    cache: {
-      home: cachedir || paths.cache,
-      logs: xdg.resolve(cachedir || paths.cache, 'logs')
-    },
-    config: {
-      home: configdir || paths.config,
-      dirs: [...new Set([configdir || paths.config, ...paths.configdirs])]
-    },
-    data: {
-      home: datadir || paths.data,
-      dirs: [...new Set([datadir || paths.data, ...paths.datadirs])]
-    },
-    runtime: {
-      home: runtimedir || paths.runtime
-    }
-  };
-};
+const expand = require('./lib/expand');
+const { homedir, resolve, split } = require('./lib/utils');
 
 /**
  * Get the XDG Base Directory paths for Linux, or the equivalents for Windows or MaxOS.
@@ -41,7 +16,7 @@ const expanded = (paths, options = {}) => {
  */
 
 const xdg = (options = {}) => {
-  const platform = options.platform || process.platform;
+  const platform = options.platform || (isWindows ? 'win32' : 'linux');
   const fn = xdg[platform];
 
   if (typeof fn !== 'function') {
@@ -73,20 +48,21 @@ xdg.darwin = (options = {}) => {
   const temp = options.tempdir || os.tmpdir();
   const home = options.homedir || homedir('darwin');
   const lib = join(home, 'Library');
-  const config = resolve(env.XDG_CONFIG_HOME || join(lib, 'Application Support'), subdir);
   const data = resolve(env.XDG_DATA_HOME || join(lib, 'Application Support'), subdir);
+  const config = resolve(env.XDG_CONFIG_HOME || join(lib, 'Application Support'), subdir);
+  const etc = '/etc/xdg';
 
   const dirs = {
     cache: resolve(env.XDG_CACHE_HOME || join(lib, 'Caches'), subdir),
     config,
-    configdirs: [config].concat(split(env.XDG_CONFIG_DIRS || '/etc/xdg')),
+    config_dirs: [config].concat(split(env.XDG_CONFIG_DIRS || etc)),
     data,
-    datadirs: [data].concat(split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')),
+    data_dirs: [data].concat(split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')),
     runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir)
   };
 
   if (options.expanded === true) {
-    return expanded(dirs, options);
+    return expand(dirs, options);
   }
 
   return dirs;
@@ -111,20 +87,21 @@ xdg.linux = (options = {}) => {
 
   const temp = options.tempdir || os.tmpdir();
   const home = options.homedir || homedir('linux');
-  const config = resolve(env.XDG_CONFIG_HOME || join(home, '.config'), subdir);
   const data = resolve(env.XDG_DATA_HOME || join(home, '.local', 'share'), subdir);
+  const config = resolve(env.XDG_CONFIG_HOME || join(home, '.config'), subdir);
+  const etc = '/etc/xdg';
 
   const dirs = {
     cache: resolve(env.XDG_CACHE_HOME || join(home, '.cache'), subdir),
     config,
-    configdirs: [config].concat(split(env.XDG_CONFIG_DIRS || '/etc/xdg')),
+    config_dirs: [config].concat(split(env.XDG_CONFIG_DIRS || etc)),
     data,
-    datadirs: [data].concat(split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')),
+    data_dirs: [data].concat(split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')),
     runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir)
   };
 
   if (options.expanded === true) {
-    return expanded(dirs, options);
+    return expand(dirs, options);
   }
 
   return dirs;
@@ -153,24 +130,30 @@ xdg.win32 = (options = {}) => {
 
   const {
     APPDATA = join(home, 'AppData', 'Roaming'),
-    LOCALAPPDATA = join(home, 'AppData', 'Local')
+    LOCALAPPDATA = join(home, 'AppData', 'Local'),
+
+    // XDG Base Dir variables
+    XDG_CACHE_HOME,
+    XDG_CONFIG_DIRS,
+    XDG_DATA_DIRS,
+    XDG_RUNTIME_DIR
   } = env;
 
   const local = options.roaming === true ? APPDATA : LOCALAPPDATA;
-  const config = resolve(env.XDG_CONFIG_HOME || APPDATA, subdir, 'Config');
   const data = resolve(env.XDG_DATA_HOME || local, subdir, 'Data');
+  const config = resolve(env.XDG_CONFIG_HOME || APPDATA, subdir, 'Config');
 
   const dirs = {
-    cache: resolve(env.XDG_CACHE_HOME || join(local), subdir, 'Cache'),
+    cache: resolve(XDG_CACHE_HOME || join(local), subdir, 'Cache'),
     config,
-    configdirs: [config].concat(split(env.XDG_CONFIG_DIRS)),
+    config_dirs: [config].concat(split(XDG_CONFIG_DIRS)),
     data,
-    datadirs: [data].concat(split(env.XDG_DATA_DIRS)),
-    runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir)
+    data_dirs: [data].concat(split(XDG_DATA_DIRS)),
+    runtime: resolve(XDG_RUNTIME_DIR || temp, subdir)
   };
 
   if (options.expanded === true) {
-    return expanded(dirs, options);
+    return expand(dirs, options);
   }
 
   return dirs;
@@ -180,40 +163,23 @@ xdg.win32 = (options = {}) => {
  * Respect casing in user's existing paths
  */
 
-xdg.resolve = (parentdir, ...args) => {
-  if (args.length && /^[A-Z]/.test(path.basename(parentdir))) {
-    return path.join(parentdir, ...args.map(v => title(v)));
-  }
-  if (args.length) {
-    return path.join(parentdir, ...args.map(v => v.toLowerCase()));
-  }
-  return path.join(parentdir, 'xdg', ...args);
-};
+xdg.resolve = resolve;
 
 /**
- * Helpers
+ * Convenience aliases
  */
 
-const split = str => str ? str.split(path.delimiter) : [];
-const title = str => str ? str[0].toUpperCase() + str.slice(1) : '';
-const homedir = platform => {
-  return os.homedir() || (platform === 'win32' ? os.tmpdir() : '/usr/local/share');
-};
-const dir = (key, options = {}) => {
-  let prop = options.envPrefix ? `${options.envPrefix}_${key}_dir` : null;
-  let name = `${key}dir`;
+xdg.windows = xdg.win32;
+xdg.macos = xdg.darwin;
 
-  if (prop) {
-    return process.env[prop.toUpperCase()] || options[name];
-  }
+/**
+ * Expose "user dirs"
+ */
 
-  return options[name];
-};
+xdg.userdirs = require('./lib/userdirs');
 
 /**
  * Expose "xdg"
  */
 
-xdg.windows = xdg.win32;
-xdg.macos = xdg.darwin;
 module.exports = xdg;
