@@ -2,5 +2,5 @@
 
 const xdg = require('..');
 
-console.log(xdg());
+console.log(xdg({ subdir: 'FooBar' }));
 
