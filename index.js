@@ -5,11 +5,11 @@ const os = require('os');
 const path = require('path');
 const join = path.join;
 const expand = require('./lib/expand');
-const { homedir, resolve, split } = require('./lib/utils');
+const { homedir, load, resolve, split } = require('./lib/utils');
 
 /**
- * Get the XDG Base Directory paths for Linux, or the equivalents for Windows or MaxOS.
- * @name xdg()
+ * Get the XDG Base Directory paths for Linux, or equivalent paths for Windows or MaxOS.
+ * @name xdg
  * @param {Object} `options`
  * @return {Object} Returns an object of paths for the current platform.
  * @api public
@@ -161,15 +161,11 @@ xdg.win32 = (options = {}) => {
 };
 
 /**
- * Respect casing in user's existing paths
+ * Convenience methods
  */
 
+xdg.load = load;
 xdg.resolve = resolve;
-
-/**
- * Convenience aliases
- */
-
 xdg.windows = xdg.win32;
 xdg.macos = xdg.darwin;
 
