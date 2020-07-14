@@ -1,5 +1,38 @@
-node_modules
+# Always ignore
 .DS_Store
-tmp
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Instrumentation and code coverage
+coverage
+lib-cov # jscoverage/JSCover
+cov.html
+
+# Temporary directories
 temp
+tmp
+.grunt # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
+
+# Lockfiles
+.lock-wscript # node-waf configuration
+
+# Compiled binary addons (http://nodejs.org/api/addons.html)
+build/Release
+
+# Installed module dependencies
+node_modules
+
+# Custom
+*.sublime*
+docs
+.env
+dist
 vendor
