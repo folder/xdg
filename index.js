@@ -160,7 +160,7 @@ xdg.win32 = (options = {}) => {
   const appdata = env.XDG_CONFIG_HOME || APPDATA;
   const cache = resolve(XDG_CACHE_HOME || local, subdir, 'Cache');
   const config = resolve(appdata, subdir, 'Config');
-  const state = resolve(env.XDG_STATE_HOME || local, subdir, 'State');
+  const state = resolve(env.XDG_STATE_HOME || local);
 
   const dirs = {
     cache,
