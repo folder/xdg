@@ -1,6 +1,5 @@
 'use strict';
 
-const isWindows = process.platform === 'win32';
 const os = require('os');
 const path = require('path');
 const join = path.join;
@@ -16,7 +15,7 @@ const { homedir, load, resolve, split } = require('./lib/utils');
  */
 
 const xdg = (options = {}) => {
-  const platform = options.platform || (isWindows ? 'win32' : 'linux');
+  const platform = options.platform || process.platform;
   const fn = xdg[platform];
 
   if (typeof fn !== 'function') {
