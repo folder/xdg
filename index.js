@@ -63,7 +63,7 @@ xdg.darwin = (options = {}) => {
     data,
     data_dirs: [data, ...split(env.XDG_DATA_DIRS || '/usr/local/share/:/usr/share/')],
     runtime: resolve(env.XDG_RUNTIME_DIR || temp, subdir),
-    logs: join(ccg, 'logs')
+    logs: join(cch, 'logs')
   };
 
   if (options.expanded === true) {
