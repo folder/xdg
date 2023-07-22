@@ -16,11 +16,12 @@ const { homedir, load, resolve, split } = require('./lib/utils');
  */
 
 const xdg = (options = {}) => {
-  const platform = options.platform || (isWindows ? 'win32' : 'linux');
-  const fn = xdg[platform];
+  const { platform = process.platform } = options;
+  const key = platform || (isWindows ? 'win32' : 'linux');
+  const fn = xdg[key];
 
   if (typeof fn !== 'function') {
-    throw new Error(`Platform "${platform}" is not supported`);
+    throw new Error(`Platform "${key}" is not supported`);
   }
 
   return fn(options);

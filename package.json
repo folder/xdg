@@ -10,16 +10,16 @@
   },
   "files": [
     "index.js",
-    "lib/"
+    "lib"
   ],
   "main": "index.js",
-  "engines": {
-    "node": ">=10"
-  },
   "license": "MIT",
   "dependencies": {
+    "ini": "^4.1.1",
     "picomatch": "^2.3.1",
-    "write": "^2.0.0"
+    "toml": "^3.0.0",
+    "write": "^2.0.0",
+    "yaml": "^2.3.1"
   },
   "devDependencies": {
     "gulp-format-md": "^2.0.0",
@@ -55,7 +55,8 @@
     "unix",
     "user",
     "xd",
-    "xdg"
+    "xdg",
+    "xdg-basedir"
   ],
   "verb": {
     "toc": false,
