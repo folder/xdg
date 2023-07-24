@@ -4,7 +4,7 @@ const isWindows = process.platform === 'win32';
 const os = require('os');
 const path = require('path');
 const join = path.join;
-const expand = require('./lib/expand');
+const { create, expand, loadFile } = require('./lib/expand');
 const { homedir, load, resolve, split } = require('./lib/utils');
 
 /**
@@ -68,9 +68,13 @@ xdg.darwin = (options = {}) => {
   };
 
   if (options.expanded === true) {
-    return expand(dirs, options);
+    const expanded = expand(dirs, options);
+    expanded.create = create;
+    expanded.load = (pathname, config, options) => loadFile(config)(pathname, options);
+    return expanded;
   }
 
+  dirs.create = create;
   return dirs;
 };
 
@@ -113,7 +117,9 @@ xdg.linux = (options = {}) => {
   };
 
   if (options.expanded === true) {
-    return expand(dirs, options);
+    const expanded = expand(dirs, options);
+    expanded.create = create;
+    return expanded;
   }
 
   return dirs;
@@ -168,7 +174,9 @@ xdg.win32 = (options = {}) => {
   };
 
   if (options.expanded === true) {
-    return expand(dirs, options);
+    const expanded = expand(dirs, options);
+    expanded.create = create;
+    return expanded;
   }
 
   return dirs;
