@@ -1,6 +1,5 @@
 'use strict';
 
-const isWindows = process.platform === 'win32';
 const os = require('os');
 const path = require('path');
 const join = path.join;
@@ -16,12 +15,11 @@ const { homedir, load, resolve, split } = require('./lib/utils');
  */
 
 const xdg = (options = {}) => {
-  const { platform = process.platform } = options;
-  const key = platform || (isWindows ? 'win32' : 'linux');
-  const fn = xdg[key];
+  const platform = options.platform || process.platform;
+  const fn = xdg[platform];
 
   if (typeof fn !== 'function') {
-    throw new Error(`Platform "${key}" is not supported`);
+    throw new Error(`Platform "${platform}" is not supported`);
   }
 
   return fn(options);
@@ -54,11 +52,13 @@ xdg.darwin = (options = {}) => {
   const home = options.homedir || homedir('darwin');
   const data = resolve(env.XDG_DATA_HOME || app(), subdir);
   const config = resolve(env.XDG_CONFIG_HOME || app(), subdir);
+  const state = resolve(env.XDG_STATE_HOME || app(), subdir);
   const cch = resolve(env.XDG_CACHE_HOME || caches(), subdir);
   const etc = '/etc/xdg';
 
   const dirs = {
     cache: cch,
+    state,
     config,
     config_dirs: [config, ...split(env.XDG_CONFIG_DIRS || etc)],
     data,
@@ -94,16 +94,19 @@ xdg.linux = (options = {}) => {
   const cache = () => join(home, '.cache');
   const config = () => join(home, '.config');
   const share = () => join(home, '.local', 'share');
+  const state = () => join(home, '.local', 'state');
 
   const temp = options.tempdir || os.tmpdir();
   const home = options.homedir || homedir('linux');
   const data = resolve(env.XDG_DATA_HOME || share(), subdir);
+  const stte = resolve(env.XDG_STATE_HOME || state(), subdir);
   const cfg = resolve(env.XDG_CONFIG_HOME || config(), subdir);
   const cch = resolve(env.XDG_CACHE_HOME || cache(), subdir);
   const etc = '/etc/xdg';
 
   const dirs = {
     cache: cch,
+    state: stte,
     config: cfg,
     config_dirs: [cfg, ...split(env.XDG_CONFIG_DIRS || etc)],
     data,
@@ -156,9 +159,11 @@ xdg.win32 = (options = {}) => {
   const appdata = env.XDG_CONFIG_HOME || APPDATA;
   const cache = resolve(XDG_CACHE_HOME || local, subdir, 'Cache');
   const config = resolve(appdata, subdir, 'Config');
+  const state = resolve(env.XDG_STATE_HOME || local);
 
   const dirs = {
     cache,
+    state,
     config,
     config_dirs: [config, ...split(XDG_CONFIG_DIRS)],
     data,
