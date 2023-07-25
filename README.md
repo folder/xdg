@@ -1,6 +1,6 @@
 # @folder/xdg [![NPM version](https://img.shields.io/npm/v/@folder/xdg.svg?style=flat)](https://www.npmjs.com/package/@folder/xdg) [![NPM monthly downloads](https://img.shields.io/npm/dm/@folder/xdg.svg?style=flat)](https://npmjs.org/package/@folder/xdg) [![NPM total downloads](https://img.shields.io/npm/dt/@folder/xdg.svg?style=flat)](https://npmjs.org/package/@folder/xdg)
 
-> Get cross-platform XDG Base Directories or their equivalents. Works with Linux, Windows, or MacOS.
+> Get cross-platform XDG Base Directories or their equivalents. Works with Linux, Windows (win32), or MacOS (darwin).
 
 Please consider following this project's author, [Jon Schlinkert](https://github.com/jonschlinkert), and consider starring the project to show your :heart: and support.
 
@@ -251,7 +251,7 @@ The main export, and each method, returns an object with the following propertie
 
 ## Main Export
 
-### [xdg](index.js#L18)
+### [xdg](index.js#L17)
 
 Get the XDG Base Directory paths for Linux, or equivalent paths for Windows or MaxOS.
 
@@ -260,7 +260,7 @@ Get the XDG Base Directory paths for Linux, or equivalent paths for Windows or M
 * `options` **{Object}**
 * `returns` **{Object}**: Returns an object of paths for the current platform.
 
-### [.darwin](index.js#L44)
+### [.darwin](index.js#L42)
 
 Get XDG equivalent paths for MacOS. Used by the main export when `process.platform` is `darwin`. Aliased as `xdg.macos()`.
 
@@ -277,7 +277,7 @@ const dirs = xdg.darwin();
 const dirs = xdg.macos();
 ```
 
-### [.linux](index.js#L89)
+### [.linux](index.js#L93)
 
 Get XDG equivalent paths for Linux. Used by the main export when `process.platform` is `linux`.
 
@@ -290,7 +290,7 @@ Get XDG equivalent paths for Linux. Used by the main export when `process.platfo
 const dirs = xdg.linux();
 ```
 
-### [.win32](index.js#L136)
+### [.win32](index.js#L145)
 
 Get XDG equivalent paths for MacOS. Used by the main export when `process.platform` is `win32`. Aliased as `xdg.windows()`.
 
@@ -305,164 +305,6 @@ Get XDG equivalent paths for MacOS. Used by the main export when `process.platfo
 const dirs = xdg.win32();
 // or
 const dirs = xdg.windows();
-```
-
-### [.userdirs()](lib/userdirs.js#L17)
-
-Get the XDG User Directories for Linux, or equivalents for Windows or MaxOS.
-
-**Params**
-
-* `options` **{Object}**
-* `returns` **{Object}**: Returns an object of directory paths.
-
-### [.userdirs.expand()](lib/userdirs.js#L39)
-
-Returns an object to with paths to `user-dirs.*` files, as well as functions to
-load each file.
-
-**Params**
-
-* `options` **{Object}**
-* `paths` **{Object}**: Optionally pass the paths from the `userdirs()` function to avoid creating them again.
-* `returns` **{Object}**: Returns an object with a `paths` object, and `config`, `defaults`, `dirs`, and `create` functions for actually loading the user-dir files.
-
-### [.userdirs.conf()](lib/userdirs.js#L76)
-
-Loads and parses the contents of `user-dirs.conf`, if one exists in user home.
-
-**Params**
-
-* `options` **{Object}**
-* `returns` **{Object}**: Returns configur
-
-**Example**
-
-```js
-const config = userdirs.conf();
-console.log(config);
-//=> { enabled: true, filename_encoding: 'UTF-8' }
-```
-
-### [.userdirs.defaults()](lib/userdirs.js#L105)
-
-Loads and parses the contents of `user-dirs.defaults`, if one exists in user home.
-
-// Example results:
-// {
-//   XDG_DESKTOP_DIR: '/Users/jonschlinkert/Desktop',
-//   XDG_DOWNLOAD_DIR: '/Users/jonschlinkert/Downloads',
-//   XDG_TEMPLATES_DIR: '/Users/jonschlinkert/Templates',
-//   XDG_PUBLICSHARE_DIR: '/Users/jonschlinkert/Public',
-//   XDG_DOCUMENTS_DIR: '/Users/jonschlinkert/Documents',
-//   XDG_MUSIC_DIR: '/Users/jonschlinkert/Music',
-//   XDG_PICTURES_DIR: '/Users/jonschlinkert/Pictures',
-//   XDG_VIDEOS_DIR: '/Users/jonschlinkert/Videos'
-// }
-
-**Params**
-
-* `options` **{Object}**
-* `returns` **{Object}**: Returns an object of paths.
-
-**Example**
-
-```js
-const defaults = userdirs.defaults();
-console.log(defaults);
-```
-
-### [.userdirs.dirs()](lib/userdirs.js#L132)
-
-Loads and parses the contents of `user-dirs.dirs`, if one exists in user home.
-
-**Params**
-
-* `options` **{Object}**
-* `returns` **{Object}**: Returns an object of paths.
-
-**Example**
-
-```js
-const dirs = userdirs.dirs();
-console.log(dirs);
-// Example results:
-// {
-//   XDG_MUSIC_DIR: '/Users/jonschlinkert/Documents/Music',
-//   XDG_PICTURES_DIR: '/Users/jonschlinkert/Documents/Pictures',
-//   XDG_TEMPLATES_DIR: '/Users/jonschlinkert/Documents/Templates',
-//   XDG_VIDEOS_DIR: '/Users/jonschlinkert/Documents/Videos'
-// }
-```
-
-### [.userdirs.create()](lib/userdirs.js#L165)
-
-Get the actual XDG User Directories to use for MacOS. Gets the `user-dirs.conf`, `user-dirs.defaults`, and the `user-dirs.dirs` files and, if not disabled in `user-dirs.conf`, merges the values in defaults and dirs to create the paths to use.
-
-**Params**
-
-* `options` **{Object}**
-* `returns` **{Object}**: Returns an object of paths.
-
-**Example**
-
-```js
-const dirs = userdirs.create();
-console.log(dirs);
-// Example results:
-// {
-//   XDG_DESKTOP_DIR: '/Users/jonschlinkert/Desktop',
-//   XDG_DOWNLOAD_DIR: '/Users/jonschlinkert/Downloads',
-//   XDG_TEMPLATES_DIR: '/Users/jonschlinkert/Documents/Templates',
-//   XDG_PUBLICSHARE_DIR: '/Users/jonschlinkert/Public',
-//   XDG_DOCUMENTS_DIR: '/Users/jonschlinkert/Documents',
-//   XDG_MUSIC_DIR: '/Users/jonschlinkert/Documents/Music',
-//   XDG_PICTURES_DIR: '/Users/jonschlinkert/Documents/Pictures',
-//   XDG_VIDEOS_DIR: '/Users/jonschlinkert/Documents/Videos'
-// }
-```
-
-### [.userdirs.darwin()](lib/userdirs.js#L181)
-
-Get the XDG User Directories for MacOS. This method is used by the main function when `process.platform` is `darwin`. Exposed as a method so you can call it directly if necessary. Also aliased as `userdirs.macos()`.
-
-**Params**
-
-* `options` **{Object}**
-* `returns` **{Object}**: Returns an object of paths.
-
-**Example**
-
-```js
-const { dirs, conf, defaults } = userdirs.darwin(); // or userdirs.macos();
-```
-
-### [.userdirs.linux()](lib/userdirs.js#L209)
-
-Gets the XDG User Directories for Linux. Used by the main export when `process.platform` is `linux`.
-
-* `returns` **{Object}**: Returns an object of paths.
-* `returns` **{Object}**: Returns an object of paths.
-
-**Example**
-
-```js
-const { dirs, conf, defaults } = userdirs.linux();
-```
-
-### [.userdirs.win32()](lib/userdirs.js#L235)
-
-Gets the XDG User Directories for MacOS. Used by the `userdirs()` function when `process.platform` is `win32`. Also aliased as `userdirs.windows()`.
-
-**Params**
-
-* `options` **{Object}**
-* `returns` **{Object}**: Returns an object of paths.
-
-**Example**
-
-```js
-const { dirs, conf, defaults } = userdirs.win32(); // or userdirs.windows();
 ```
 
 ## XDG Base Directories
@@ -563,4 +405,4 @@ Released under the MIT License.
 
 ***
 
-_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.8.0, on July 22, 2023._
+_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.8.0, on July 24, 2023._

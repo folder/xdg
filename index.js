@@ -200,7 +200,7 @@ xdg.macos = xdg.darwin;
  * Expose "user dirs"
  */
 
-xdg.userdirs = require('./lib/userdirs');
+xdg.userdirs = require('./lib/user-dirs');
 
 /**
  * Expose "xdg"

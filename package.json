@@ -1,7 +1,7 @@
 {
   "name": "@folder/xdg",
-  "description": "Get cross-platform XDG Base Directories or their equivalents. Works with Linux, Windows, or MacOS.",
-  "version": "4.0.0",
+  "description": "Get cross-platform XDG Base Directories or their equivalents. Works with Linux, Windows (win32), or MacOS (darwin).",
+  "version": "3.1.1",
   "repository": "folder/xdg",
   "homepage": "https://github.com/folder/xdg",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
@@ -36,9 +36,9 @@
     "directory",
     "dirname",
     "dot",
-    "file",
     "file path",
     "file paths",
+    "file",
     "filepath",
     "filepaths",
     "files",
@@ -54,9 +54,13 @@
     "spec",
     "unix",
     "user",
+    "win32",
+    "windows",
     "xd",
-    "xdg",
-    "xdg-basedir"
+    "xdg-basedir-spec",
+    "xdg-basedir",
+    "xdg-basedirs",
+    "xdg"
   ],
   "verb": {
     "toc": false,
